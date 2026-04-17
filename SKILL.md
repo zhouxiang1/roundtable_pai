@@ -6,7 +6,7 @@ description: |
   
 disable-model-invocation: false
 allowed-tools:
-  - Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/roundtable_controller.py --stdin)
+  - Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/roundtable_controller.py --stdin *)
   - Read
 ---
 

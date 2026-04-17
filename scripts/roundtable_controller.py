@@ -44,6 +44,16 @@ CHOICE_ALIASES = {
 HELP_PATTERNS = ('这是干嘛', '怎么用', '如何使用', '怎么玩', '玩法', 'help')
 RESET_EXACT_PATTERNS = {'重置', 'reset', '清空', '清空状态', '重新来过'}
 STATUS_EXACT_PATTERNS = {'当前状态', 'status', '进度', '查看状态'}
+RESHOW_CANDIDATES_PATTERNS = (
+    '候选人',
+    '候选人物',
+    '候选列表',
+    '候选池',
+    '重发候选',
+    '再发候选',
+    '给我候选',
+    '把名单发我',
+)
 START_PREFIXES = (
     '启动圆桌派',
     '用圆桌讨论',
@@ -202,6 +212,13 @@ def is_reset_message(text: str) -> bool:
 def is_status_message(text: str) -> bool:
     t = text.strip().lower()
     return t in STATUS_EXACT_PATTERNS
+
+
+def is_reshow_candidates_message(text: str) -> bool:
+    t = text.strip()
+    if not t:
+        return False
+    return any(p in t for p in RESHOW_CANDIDATES_PATTERNS)
 
 
 def render_help() -> str:
@@ -480,6 +497,10 @@ def route_message(raw_message: str) -> str:
     if state['status'] in {'idle', 'finished'}:
         return start_new_discussion(user_message)
     if state['status'] == 'awaiting_participant_pick':
+        if is_reshow_candidates_message(user_message):
+            if state.get('candidate_pool'):
+                return format_candidate_pool(state['candidate_pool'])
+            return '我这边候选池暂时不可用。你直接发一个新问题，我会重新给你候选人物。'
         return handle_pick(state, user_message)
     if state['status'] == 'awaiting_user_choice':
         return handle_user_choice(state, user_message)

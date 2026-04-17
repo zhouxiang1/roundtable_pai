@@ -91,6 +91,12 @@ class RoundtableControllerTests(unittest.TestCase):
         out = route_message('1.3.6')
         self.assertIn('免责声明', out)
 
+    def test_can_reshow_candidate_pool_when_user_asks(self):
+        route_message('人类的未来会被硅基生命代替吗？')
+        out = route_message('候选人呢')
+        self.assertIn('选 3 位你最想听的人物', out)
+        self.assertIn('请直接回复 3 位人物名字或者序号。', out)
+
     def test_security_guards(self):
         validate_runtime_paths()
         source = Path('scripts/roundtable_controller.py').read_text(encoding='utf-8')
