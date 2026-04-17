@@ -1,8 +1,9 @@
 ---
 name: roundtable-pai
 description: |
-  圆桌派会把用户的一个问题变成一场三人圆桌讨论。
-  先给出 10 位候选人物，用户选 3 位，再只生成当前这一轮讨论，并在每轮后停下来等待用户继续。
+  圆桌派会把用户的一个问题变成一场三位大师的圆桌讨论。
+  典型触发词：启动圆桌派、用圆桌讨论、启动圆桌讨论、开始讨论、开始圆桌派。
+  
 disable-model-invocation: true
 allowed-tools:
   - Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/roundtable_controller.py --stdin *)
@@ -21,6 +22,16 @@ allowed-tools:
 
 **所有状态必须来自 `runtime/roundtable_state.json`，不得仅依赖模型会话记忆。**
 
+## 明确触发词
+
+以下表达都应视为用户想启动本 skill：
+- `启动圆桌派`
+- `用圆桌讨论`
+- `启动圆桌讨论`
+- `开始讨论`
+- `开始圆桌派`
+- 以及“直接抛出一个待讨论问题”的自然语言输入
+
 ## 每一轮都必须先做的事
 
 收到用户最新消息后，第一件事永远是调用控制器脚本，把“用户这句原话”原样传进去：
@@ -30,6 +41,11 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/roundtable_controller.py --stdin <<'EOF'
 <用户这一轮的原话，原样放入，不要改写>
 EOF
 ```
+
+安全调用要求（必须同时满足）：
+- 仅允许 `--stdin` 传入原始用户输入，不得改成 argv 拼接调用。
+- 必须使用 `<<'EOF'` 这种单引号 heredoc，禁止让 shell 解释用户输入。
+- 禁止通过 `eval`、`source`、命令替换等方式执行用户输入。
 
 禁止跳过这一步。
 禁止先凭记忆判断当前该做什么。
@@ -54,7 +70,9 @@ EOF
   - `references/discussion-quality.md`
   - `references/dynamic-assignments.md`
   - 对应的 `references/discussion-frames/*.md`
-  - 3 位人物各自的 `references/personas/*.md`
+- 3 位人物各自的 `references/personas/*.md`
+- 在第一轮正文开始前，先输出一次免责声明：
+  `以下内容为基于公开资料整理的人物视角模拟，不代表人物本人真实发言。`
 - 只生成 **当前这一轮** 的讨论正文
 - 然后 **原样输出脚本给出的用户参与块**
 - 输出参与块后 **立刻停止**
@@ -92,6 +110,8 @@ EOF
 3. **绝不在没有用户新输入时自动继续**
 4. **阶段 1 选完人后，直接进入第一轮，不再要求 `/continue`**
 5. **如果脚本没返回 `STATUS: DISCUSSION_ROUND` 或 `STATUS: FINAL_CONCLUSION`，你就不能自己写讨论正文或结论**
+6. **不得把用户原始输入当 shell 代码执行，只能把它当普通文本转发给控制器**
+7. **只读 `references/` 与 `runtime/roundtable_state.json`，不得读写本 skill 目录以外路径**
 
 ## 用户可见风格
 
@@ -108,3 +128,4 @@ EOF
 - 不得擅自改变 A/B/C/D/E 的产品含义
 - 不得把后台字段原样暴露给用户：`status`、`pending_user_input_type`、`current_round`、`max_rounds`
 - 不得要求用户学习命令格式才能使用这套 skill
+- 不得省略人物视角模拟免责声明，不得把模拟内容包装为真人真实发言

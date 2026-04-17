@@ -1,13 +1,18 @@
 #!/bin/bash
 # 阶段1随机抽卡脚本 - 真正的RNG，不依赖LLM"模拟"随机
+set -euo pipefail
 
-POOL_JSON="/Users/ShownZHOU/Desktop/圆桌派skill/roundtable_pai/data/character_pool.json"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+POOL_JSON="${SKILL_ROOT}/data/character_pool.json"
+export POOL_JSON
 
 python3 - <<'PYEOF'
 import json
+import os
 import random
 
-pool = json.load(open("/Users/ShownZHOU/Desktop/圆桌派skill/roundtable_pai/data/character_pool.json"))["characters"]
+pool = json.load(open(os.environ["POOL_JSON"], encoding="utf-8"))["characters"]
 
 epic = [c for c in pool if c["rarity"] == "史诗"]
 legendary = [c for c in pool if c["rarity"] == "传说"]

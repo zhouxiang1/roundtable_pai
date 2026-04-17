@@ -36,7 +36,16 @@ CHOICE_ALIASES = {
 HELP_PATTERNS = ('这是干嘛', '怎么用', '如何使用', '怎么玩', '玩法', 'help')
 RESET_EXACT_PATTERNS = {'重置', 'reset', '清空', '清空状态', '重新来过'}
 STATUS_EXACT_PATTERNS = {'当前状态', 'status', '进度', '查看状态'}
-START_PREFIXES = ('启动技能', '启动', '开始讨论', '开始技能', '开始')
+START_PREFIXES = (
+    '启动圆桌派',
+    '用圆桌讨论',
+    '启动圆桌讨论',
+    '开始讨论',
+    '启动技能',
+    '开始技能',
+    '启动',
+    '开始',
+)
 
 
 def now_iso() -> str:
@@ -294,6 +303,7 @@ def discussion_round_payload(state: Dict[str, Any], intervention_type: Optional[
         lines.append('USER_INTERVENTION_TYPE: none')
     lines.extend([
         'MODEL_INSTRUCTIONS:',
+        '- 第一次进入讨论正文前，先给一句清晰免责声明：以下内容为基于公开资料整理的人物视角模拟，不代表人物本人真实发言。',
         '- 只生成当前这一轮，不得继续写下一轮。',
         '- 第一轮可以在标题前加 1 到 2 句极短开场；非第一轮不要重新开场。',
         '- 每位人物本轮最多发言 1 次，确保能一眼听出是谁在说话。',

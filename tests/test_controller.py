@@ -2,7 +2,7 @@ import json
 import unittest
 from pathlib import Path
 
-from scripts.roundtable_controller import STATE_FILE, reset_state, route_message
+from scripts.roundtable_controller import STATE_FILE, clean_message, reset_state, route_message
 
 
 class RoundtableControllerTests(unittest.TestCase):
@@ -74,6 +74,16 @@ class RoundtableControllerTests(unittest.TestCase):
         self.assertIn('选 3 位你最想听的人物', out2)
         state = self.load_state()
         self.assertEqual(state['status'], 'awaiting_participant_pick')
+
+    def test_new_trigger_prefixes_strip_correctly(self):
+        self.assertEqual(clean_message('启动圆桌派：AI 会取代创作吗？'), 'AI 会取代创作吗？')
+        self.assertEqual(clean_message('用圆桌讨论，如何做增长？'), '如何做增长？')
+        self.assertEqual(clean_message('启动圆桌讨论: 我要不要创业'), '我要不要创业')
+
+    def test_discussion_payload_contains_disclaimer_instruction(self):
+        route_message('人类的未来会被硅基生命代替吗？')
+        out = route_message('1.3.6')
+        self.assertIn('免责声明', out)
 
 
 if __name__ == '__main__':
