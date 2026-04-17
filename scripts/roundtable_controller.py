@@ -24,15 +24,10 @@ CHARACTER_POOL_PATH = SKILL_ROOT / 'data' / 'character_pool.json'
 CHARACTER_REGISTRY_PATH = SKILL_ROOT / 'data' / 'character_registry.json'
 STATE_FILE = SKILL_ROOT / 'runtime' / 'roundtable_state.json'
 
-RARITY_WEIGHTS = {
-    '史诗': 3,
-    '传说': 15,
-    '精英': 82,
-}
-RARITY_PROBABILITY = {
-    '史诗': '3%',
-    '传说': '15%',
-    '精英': '82%',
+RARITY_STARS = {
+    '史诗': '★★★',
+    '传说': '★★',
+    '精英': '★',
 }
 CHOICE_ALIASES = {
     'A': {'A', 'a', '认同A', '认同a', '认同第一位', '同意第一位', '赞同第一位'},
@@ -147,7 +142,7 @@ def canonicalize_candidate(char: Dict[str, Any], registry_by_id: Dict[str, Dict[
 
 def draw_candidates(characters: List[Dict[str, Any]], count: int = 10) -> List[Dict[str, Any]]:
     registry_by_id, _, _ = load_registry()
-    pools: Dict[str, List[Dict[str, Any]]] = {'史诗': [], '传说': [], '精英': []}
+    pool: List[Dict[str, Any]] = []
     seen_registry_ids = set()
     for char in characters:
         canonical = canonicalize_candidate(char, registry_by_id)
@@ -157,18 +152,11 @@ def draw_candidates(characters: List[Dict[str, Any]], count: int = 10) -> List[D
         if cid in seen_registry_ids:
             continue
         seen_registry_ids.add(cid)
-        rarity = canonical.get('rarity', '精英')
-        pools.setdefault(rarity, []).append(canonical)
+        pool.append(canonical)
 
+    sampled = random.sample(pool, k=min(count, len(pool)))
     candidates: List[Dict[str, Any]] = []
-    for idx in range(1, count + 1):
-        available_rarities = [r for r, items in pools.items() if items]
-        if not available_rarities:
-            break
-        rarity_weights = [RARITY_WEIGHTS.get(r, 82) for r in available_rarities]
-        chosen_rarity = random.choices(available_rarities, weights=rarity_weights, k=1)[0]
-        chosen = random.choice(pools[chosen_rarity])
-        pools[chosen_rarity] = [item for item in pools[chosen_rarity] if item['character_id'] != chosen['character_id']]
+    for idx, chosen in enumerate(sampled, start=1):
         candidates.append({
             'index': idx,
             'display_name': chosen['display_name'],
@@ -182,8 +170,10 @@ def draw_candidates(characters: List[Dict[str, Any]], count: int = 10) -> List[D
 def format_candidate_pool(candidates: List[Dict[str, Any]]) -> str:
     lines = ['选 3 位你最想听的人物，我来组织讨论：', '']
     for c in candidates:
+        rarity = c.get('rarity', '精英')
+        stars = RARITY_STARS.get(rarity, '★')
         lines.append(
-            f"{c['index']}. {c['display_name']}（{c['rarity']} ★ {RARITY_PROBABILITY.get(c['rarity'], '82%')}）：{c['fit_hint']}"
+            f"{c['index']}. {c['display_name']}（{rarity}{stars}）：{c['fit_hint']}"
         )
     lines.extend(['', '请直接回复 3 位人物名字或者序号。'])
     return '\n'.join(lines)

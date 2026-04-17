@@ -97,6 +97,12 @@ class RoundtableControllerTests(unittest.TestCase):
         self.assertIn('选 3 位你最想听的人物', out)
         self.assertIn('请直接回复 3 位人物名字或者序号。', out)
 
+    def test_candidate_pool_renders_stars_without_percent(self):
+        out = route_message('AI 会不会替代程序员？')
+        self.assertIn('选 3 位你最想听的人物', out)
+        self.assertNotIn('%', out)
+        self.assertRegex(out, r'（(史诗★★★|传说★★|精英★)）')
+
     def test_security_guards(self):
         validate_runtime_paths()
         source = Path('scripts/roundtable_controller.py').read_text(encoding='utf-8')
