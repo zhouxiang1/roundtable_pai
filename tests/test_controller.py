@@ -2,7 +2,13 @@ import json
 import unittest
 from pathlib import Path
 
-from scripts.roundtable_controller import STATE_FILE, clean_message, reset_state, route_message
+from scripts.roundtable_controller import (
+    STATE_FILE,
+    clean_message,
+    reset_state,
+    route_message,
+    validate_runtime_paths,
+)
 
 
 class RoundtableControllerTests(unittest.TestCase):
@@ -84,6 +90,22 @@ class RoundtableControllerTests(unittest.TestCase):
         route_message('人类的未来会被硅基生命代替吗？')
         out = route_message('1.3.6')
         self.assertIn('免责声明', out)
+
+    def test_security_guards(self):
+        validate_runtime_paths()
+        source = Path('scripts/roundtable_controller.py').read_text(encoding='utf-8')
+        banned_signals = (
+            'import requests',
+            'urllib.request',
+            'http.client',
+            'import socket',
+            'subprocess.',
+            'os.system(',
+            'eval(',
+            'exec(',
+        )
+        for signal in banned_signals:
+            self.assertNotIn(signal, source)
 
 
 if __name__ == '__main__':

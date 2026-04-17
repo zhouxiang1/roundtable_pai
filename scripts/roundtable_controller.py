@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+"""Roundtable controller.
+
+Security posture by design:
+- No outbound network usage.
+- No subprocess execution.
+- User input is treated as plain text only.
+- File I/O is scoped to the skill directory and runtime state file.
+"""
 from __future__ import annotations
 
 import argparse
@@ -46,6 +54,19 @@ START_PREFIXES = (
     '启动',
     '开始',
 )
+
+
+def ensure_path_in_skill_root(path: Path) -> None:
+    root = SKILL_ROOT.resolve()
+    target = path.resolve()
+    if target != root and root not in target.parents:
+        raise RuntimeError(f'Unsafe path outside skill root: {target}')
+
+
+def validate_runtime_paths() -> None:
+    # Explicit path guard to make audit expectations executable.
+    for p in (CHARACTER_POOL_PATH, CHARACTER_REGISTRY_PATH, STATE_FILE):
+        ensure_path_in_skill_root(p)
 
 
 def now_iso() -> str:
@@ -485,6 +506,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_arg_parser()
     args = parser.parse_args()
+    validate_runtime_paths()
     message = read_message(args)
     print(route_message(message))
 

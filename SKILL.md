@@ -6,9 +6,8 @@ description: |
   
 disable-model-invocation: true
 allowed-tools:
-  - Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/roundtable_controller.py --stdin *)
+  - Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/roundtable_controller.py --stdin)
   - Read
-  - Write
 ---
 
 # Roundtable Pai
@@ -21,6 +20,17 @@ allowed-tools:
 ## 核心原则
 
 **所有状态必须来自 `runtime/roundtable_state.json`，不得仅依赖模型会话记忆。**
+
+## 安全边界（审计）
+
+- 控制器只允许读取：
+  - `data/character_pool.json`
+  - `data/character_registry.json`
+  - `runtime/roundtable_state.json`
+- 控制器只允许写入：
+  - `runtime/roundtable_state.json`
+- 控制器不允许网络访问，不允许子进程调用，不允许执行用户输入。
+- 若发生路径越界或状态异常，应直接报错，不得继续执行。
 
 ## 明确触发词
 
