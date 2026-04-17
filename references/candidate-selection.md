@@ -19,7 +19,10 @@
 
 > **重要**：阶段1的随机抽取必须通过 `scripts/roundtable_controller.py` 脚本执行，不能让 LLM 自行生成随机数。LLM 只负责展示脚本输出结果。
 
-1. 运行 Bash 命令：`python3 scripts/roundtable_controller.py start "<问题>"`（其中问题由用户提供）
+1. 运行 Bash 命令（stdin 方式，原样传入问题）：
+   `python3 scripts/roundtable_controller.py --stdin <<'EOF'`
+   `<问题>`
+   `EOF`
 2. 脚本输出即为 10 位候选人物，按抽中顺序展示 1~10 序号
 3. 脚本内部已完成：权重随机（0~2=史诗3%、3~17=传说15%、18~99=精英82%）、去重、不放回抽取
 
@@ -42,7 +45,7 @@
 ```text
 你现在为这个问题推荐 10 位候选人物。
 
-任务：运行 `python3 scripts/roundtable_controller.py start "<问题>"`，将脚本输出作为候选池直接展示。
+任务：运行 `python3 scripts/roundtable_controller.py --stdin`（使用单引号 heredoc 原样传入问题），将脚本输出作为候选池直接展示。
 
 输出格式：
 - display_name

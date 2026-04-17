@@ -4,7 +4,7 @@ description: |
   圆桌派会把用户的一个问题变成一场三位大师的圆桌讨论。
   典型触发词：启动圆桌派、用圆桌讨论、启动圆桌讨论、开始讨论、开始圆桌派。
   
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools:
   - Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/roundtable_controller.py --stdin)
   - Read
